@@ -12,6 +12,7 @@
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.3.4/bluebird.min.js"></script>
     <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.0/js/msal.js"></script>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link
       rel="stylesheet"
@@ -19,6 +20,11 @@
       integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
       crossorigin="anonymous"
     />
+
+    <!-- <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script> -->
+
     <style>
       #overlay {
         position: fixed;
@@ -26,6 +32,7 @@
         height: 100%;
         background-color: #000000b0;
         z-index: 100;
+        display: none;
       }
       .container {
         display: flex;
@@ -34,15 +41,28 @@
       table {
         margin: auto;
       }
+      #table {
+        overflow-x: auto;
+        width: 100%;
+      }
       th {
         text-align: center;
+      }
+      .bottom-bottons {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+      button {
+        margin: 5px;
+        width: 140px;
       }
       .agent-name {
         font-weight: bold;
       }
       #pageContent {
         display: none;
-        max-width: 800px;
+        max-width: 935px;
         margin: auto;
       }
       .leftContainer {
@@ -51,7 +71,8 @@
         width: 100%;
         background: #4949cc;
         color: white;
-        padding: 5px;
+        padding: 15px;
+        align-items: center;
       }
       .rightContainer {
         display: none;
@@ -69,23 +90,50 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        font-weight: bold;
+        font-weight: 100;
         color: #4a4646;
-        font-size: 12px;
+        font-size: 19px;
         margin: auto;
         max-width: 80%;
         margin-top: 10px;
+        flex-wrap: wrap;
+      }
+      .week-select {
+        max-width: 300px;
+      }
+      .table-select {
+        max-width: 150px;
       }
       #logs {
         width: 100%;
         margin-top: 40px;
+      }
+      #msgBox {
+        text-align: center;
+        padding: 10px;
+        background: #cb99dc;
+        color: white;
+        font-weight: bold;
+        max-width: 424px;
+        margin: 10px auto;
+        border-radius: 11px;
+        display: none;
       }
     </style>
     <script>
       var days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
       var shifts = ["Shift1", "Shift2", "Shift3"];
       var agents = ["Agent1", "Agent2", "Agent3"];
-      var agentNames = ["---", "Malinda", "Amila", "Madushan"];
+      var agentNames = [
+        "---",
+        "Malinda",
+        "Amila",
+        "Madushan",
+        "Nuwan",
+        "Herath",
+        "Kumara",
+        "Bimal"
+      ];
       var weekPlan = {};
       var agentLoad = {};
       var DBPlan;
@@ -93,7 +141,7 @@
 
       function startApp() {
         console.log("starting....");
-        busy(false);
+
         $("#axLogo").hide();
         setCurrentWeek();
         selectedWeek = $("#weekselector").val();
@@ -104,6 +152,13 @@
         });
         onWeekChange();
         $("#pageContent").show();
+      }
+      function showMsg(msg) {
+        $("#msgBox").text(msg);
+        $("#msgBox").show();
+        setTimeout(() => {
+          $("#msgBox").hide();
+        }, 3000);
       }
 
       function busy(busy) {
@@ -126,11 +181,11 @@
               var key = `${day}-${shift}-${agent}`;
               var node;
               if (shift === "Shift3") {
-                node = `<select class='agentSelector' id=${key} style='background:yellow'>`;
+                node = `<select class='agentSelector table-select form-control' id=${key} style='background:yellow'>`;
               } else if (shift === "Shift1") {
-                node = `<div style="width:100px;height:20px"></div><select class='agentSelector' id=${key} style='background:#69dafc'>`;
+                node = `<div style="width:100px;height:20px"></div><select class='agentSelector table-select form-control' id=${key} style='background:#69dafc'>`;
               } else {
-                node = `<select class='agentSelector' id=${key} style='background:#69dafc'>`;
+                node = `<select class='agentSelector table-select form-control' id=${key} style='background:#69dafc'>`;
               }
               agentNames.forEach(agentName => {
                 node = node.concat(
@@ -156,33 +211,29 @@
         var curr = new Date();
         const todayDay = curr.getDay();
 
-        const firstDay = curr.getTime() - (todayDay - 1) * dayInMills;
-        const d1 = new Date(firstDay - 13 * dayInMills);
-        const d2 = new Date(firstDay - 7 * dayInMills);
-        const d3 = new Date(firstDay - 6 * dayInMills);
-        const d4 = new Date(firstDay - 0 * dayInMills);
-        const d5 = new Date(firstDay + 1 * dayInMills);
-        const d6 = new Date(firstDay + 7 * dayInMills);
-        const d7 = new Date(firstDay + 8 * dayInMills);
-        const d8 = new Date(firstDay + 14 * dayInMills);
-        const d9 = new Date(firstDay + 15 * dayInMills);
-        const d10 = new Date(firstDay + 21 * dayInMills);
+        var firstDay = curr.getTime();
+        for (i = 1; i < 8; i++) {
+          if (new Date(firstDay).toDateString().startsWith("Mon")) {
+            break;
+          }
+          firstDay = curr.getTime() - i * dayInMills;
+        }
+        const d1 = new Date(firstDay - 14 * dayInMills);
+        const d2 = new Date(firstDay - 8 * dayInMills);
+        const d3 = new Date(firstDay - 7 * dayInMills);
+        const d4 = new Date(firstDay - 1 * dayInMills);
+        const d5 = new Date(firstDay + 0 * dayInMills);
+        const d6 = new Date(firstDay + 6 * dayInMills);
+        const d7 = new Date(firstDay + 7 * dayInMills);
+        const d8 = new Date(firstDay + 13 * dayInMills);
+        const d9 = new Date(firstDay + 14 * dayInMills);
+        const d10 = new Date(firstDay + 20 * dayInMills);
 
-        const w1 = `${d1
-          .toUTCString()
-          .substr(0, 16)} : ${d2.toUTCString().substr(0, 16)}`;
-        const w2 = `${d3
-          .toUTCString()
-          .substr(0, 16)} : ${d4.toUTCString().substr(0, 16)}`;
-        const w3 = `${d5
-          .toUTCString()
-          .substr(0, 16)} : ${d6.toUTCString().substr(0, 16)}`;
-        const w4 = `${d7
-          .toUTCString()
-          .substr(0, 16)} : ${d8.toUTCString().substr(0, 16)}`;
-        const w5 = `${d9
-          .toUTCString()
-          .substr(0, 16)} : ${d10.toUTCString().substr(0, 16)}`;
+        const w1 = `${d1.toDateString()} : ${d2.toDateString()}`;
+        const w2 = `${d3.toDateString()} : ${d4.toDateString()}`;
+        const w3 = `${d5.toDateString()} : ${d6.toDateString()}`;
+        const w4 = `${d7.toDateString()} : ${d8.toDateString()}`;
+        const w5 = `${d9.toDateString()} : ${d10.toDateString()}`;
 
         const w11 = getShortDate(d1) + "-" + getShortDate(d2);
         const w22 = getShortDate(d3) + "-" + getShortDate(d4);
@@ -190,7 +241,7 @@
         const w44 = getShortDate(d7) + "-" + getShortDate(d8);
         const w55 = getShortDate(d9) + "-" + getShortDate(d10);
 
-        var weeks = `<select id='weekselector' onchange="onWeekChange()"><option value=${w11}>${w1}</option><option value=${w22}>${w2}</option><option selected value=${w33}>${w3}</option><option value=${w44}>${w4}</option><option value=${w55}>${w5}</option></select>`;
+        var weeks = `<select id='weekselector' onchange="onWeekChange()" class="form-control"><option value=${w11}>${w1}</option><option value=${w22}>${w2}</option><option selected value=${w33}>${w3}</option><option value=${w44}>${w4}</option><option value=${w55}>${w5}</option></select>`;
         $("#weekselectorContainer").html(weeks);
       }
 
@@ -209,6 +260,7 @@
         console.log(getDiff());
         localStorage.setItem(selectedWeek, JSON.stringify(generateJson()));
         console.log("Plan saved to DB");
+        showMsg("Plan Saved");
       }
 
       function generateJson() {
@@ -229,7 +281,7 @@
         DBPlan = JSON.parse(localStorage.getItem(selectedWeek));
 
         if (!DBPlan) {
-          alert(
+          showMsg(
             "New week selected. Data will be copied from previous schedule"
           );
           DBPlan = generateJson();
@@ -262,7 +314,9 @@
                   " changed to " +
                   newName +
                   " by " +
-                  myMSALObj.getAccount().name;
+                  myMSALObj.getAccount().name +
+                  " on " +
+                  new Date().toDateString();
               }
             });
           });
@@ -302,7 +356,7 @@
         for (const property in agentLoad) {
           if (property !== "undefined" && property !== agentNames[0]) {
             agentsNodes = agentsNodes.concat(
-              `<div><span style='margin-right: 5px'>${property}:${agentLoad[property]}  </span></div>`
+              `<div><span  class="badge badge-secondary" style='margin-right: 5px'>${property}:${agentLoad[property]}  </span></div>`
             );
           }
         }
@@ -315,6 +369,13 @@
 
   <body>
     <div id="overlay"></div>
+    <!-- <select title="Pick a number" class="form-control">
+      <option>Select...</option>
+      <option>One</option>
+      <option>Two</option>
+      <option>Three</option>
+    </select> -->
+
     <div class="container2">
       <div class="leftContainer">
         <div id="WelcomeMessage">Welcome to the Axinom</div>
@@ -345,12 +406,17 @@
       <div id="table"></div>
 
       <div id="agents"></div>
-      <button style="float: right; margin-right: 18px;" onclick="saveJson()">
-        Save Changes
-      </button>
-      <button style="float: right; margin-right: 18px;" onclick="showLogs()">
-        Show Logs
-      </button>
+      <div class="bottom-bottons">
+        <button type="button" class="btn btn-primary" onclick="saveJson()">
+          Save Changes
+        </button>
+        <button type="button" class="btn btn-warning" onclick="showLogs()">
+          Show Logs
+        </button>
+      </div>
+
+      <div id="msgBox"></div>
+
       <div id="logViewer"></div>
     </div>
   </body>
@@ -361,7 +427,7 @@
         clientId: "5c5a3fe4-7bf7-45a1-81dd-0e416a84358c", //This is your client ID
         authority:
           "https://login.microsoftonline.com/db0b4725-608f-4d84-b2e3-7fc15b0cb2d4", //This is your tenant info
-        redirectURI: "http://localhost:30662/"
+        redirectURI: "https://10.0.9.152:8080/index.html"
       },
       cache: {
         cacheLocation: "localStorage",
