@@ -47,6 +47,7 @@
         width: 100%;
         display: flex;
         justify-content: center;
+        margin-top: 15px;
       }
       button {
         margin: 5px;
@@ -176,15 +177,15 @@
               var key = `${day}-${shift}-${agent}`;
               var node;
               if (shift === "Shift3") {
-                node = `<select class='agentSelector table-select form-control' id=${key} style='background:yellow'>`;
+                node = `<select class='agentSelector table-select form-control' id=${key} style='background:#eaeae2'>`;
               } else if (shift === "Shift1") {
-                node = `<div style="width:100px;height:20px"></div><select class='agentSelector table-select form-control' id=${key} style='background:#69dafc'>`;
+                node = `<div style="width:100px;height:20px"></div><select class='agentSelector table-select form-control' id=${key} style='background: #4949cc;color: white'>`;
               } else {
-                node = `<select class='agentSelector table-select form-control' id=${key} style='background:#69dafc'>`;
+                node = `<select class='agentSelector table-select form-control' id=${key} style='background: #4949cc;color: white'>`;
               }
               agentNames.forEach(agentName => {
                 node = node.concat(
-                  `<option value='${agentName}' style='background:white'>${agentName}</option>`
+                  `<option value='${agentName}'>${agentName}</option>`
                 );
               });
               node = node + "</select>";
@@ -255,7 +256,7 @@
         saveDiff();
         localStorage.setItem(selectedWeek, JSON.stringify(generateJson()));
         console.log("Plan saved to DB");
-        showMsg("Plan Saved");
+        showMsg("Schedule Saved !");
       }
 
       function generateJson() {
@@ -277,7 +278,7 @@
 
         if (!DBPlan) {
           showMsg(
-            "New week selected. Data will be copied from previous schedule"
+            "No schedule found for this week"
           );
           DBPlan = generateJson();
         }
@@ -351,7 +352,7 @@
         for (const property in agentLoad) {
           if (property !== "undefined" && property !== agentNames[0]) {
             agentsNodes = agentsNodes.concat(
-              `<div><span  class="badge badge-secondary" style='margin-right: 5px'>${property}:${agentLoad[property]}  </span></div>`
+              `<div><span  class="badge badge-secondary" style='margin-right: 5px'>${property}:  ${agentLoad[property]}  </span></div>`
             );
           }
         }
@@ -364,12 +365,6 @@
 
   <body>
     <div id="overlay"></div>
-    <!-- <select title="Pick a number" class="form-control">
-      <option>Select...</option>
-      <option>One</option>
-      <option>Two</option>
-      <option>Three</option>
-    </select> -->
 
     <div class="container2">
       <div class="leftContainer">
