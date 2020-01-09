@@ -221,31 +221,19 @@
           }
           firstDay = curr.getTime() - i * dayInMills;
         }
-        const d1 = new Date(firstDay - 14 * dayInMills);
-        const d2 = new Date(firstDay - 8 * dayInMills);
-        const d3 = new Date(firstDay - 7 * dayInMills);
-        const d4 = new Date(firstDay - 1 * dayInMills);
-        const d5 = new Date(firstDay + 0 * dayInMills);
-        const d6 = new Date(firstDay + 6 * dayInMills);
-        const d7 = new Date(firstDay + 7 * dayInMills);
-        const d8 = new Date(firstDay + 13 * dayInMills);
-        const d9 = new Date(firstDay + 14 * dayInMills);
-        const d10 = new Date(firstDay + 20 * dayInMills);
 
-        const w1 = `${d1.toDateString()} : ${d2.toDateString()}`;
-        const w2 = `${d3.toDateString()} : ${d4.toDateString()}`;
-        const w3 = `${d5.toDateString()} : ${d6.toDateString()}`;
-        const w4 = `${d7.toDateString()} : ${d8.toDateString()}`;
-        const w5 = `${d9.toDateString()} : ${d10.toDateString()}`;
-
-        const w11 = getShortDate(d1) + "-" + getShortDate(d2);
-        const w22 = getShortDate(d3) + "-" + getShortDate(d4);
-        const w33 = getShortDate(d5) + "-" + getShortDate(d6);
-        const w44 = getShortDate(d7) + "-" + getShortDate(d8);
-        const w55 = getShortDate(d9) + "-" + getShortDate(d10);
-
-        var weeks = `<select id='weekselector' onchange="onWeekChange()" class="form-control"><option value=${w11}>${w1}</option><option value=${w22}>${w2}</option><option selected value=${w33}>${w3}</option><option value=${w44}>${w4}</option><option value=${w55}>${w5}</option></select>`;
-        $("#weekselectorContainer").html(weeks);
+        let wks = `<select id='weekselector' onchange="onWeekChange()" class="form-control">`;
+        cd = 14;
+        for (i = 0; i < 12; i++) {
+          const d1 = new Date(firstDay - cd * dayInMills);
+          const d2 = new Date(firstDay - (cd - 6) * dayInMills);
+          const w1 = `${d1.toDateString()} : ${d2.toDateString()}`;
+          const w11 = getShortDate(d1) + "-" + getShortDate(d2);
+          wks = wks + `<option ${i===2? 'selected' : ''} value=${w11}>${w1}</option>`;
+          cd -= 7;
+        }
+        wks = wks + '</select>';
+        $("#weekselectorContainer").html(wks);
       }
 
       function onWeekChange() {
